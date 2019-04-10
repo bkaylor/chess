@@ -1,4 +1,4 @@
-#Chess
+## Chess
 A Chess game vs a very bad AI.
 
 ## Usage
