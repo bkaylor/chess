@@ -1,4 +1,6 @@
 #include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
 #include "SDL.h"
 #include "SDL_ttf.h"
 #include "SDL_image.h"
@@ -177,6 +179,165 @@ void add_possible_moves_long(Possible_Moves *possible_moves, Selection_Info *sel
     }
 }
 
+void get_possible_moves(Possible_Moves *possible_moves, Selection_Info *selection, Tile board[][8])
+{
+    switch (selection->tile->type)
+    {
+        case EMPTY:
+        break;
+
+        case WHITE_PAWN:
+            // One space forward.
+            if (((selection->y - 1) >= 0) && (board[selection->y-1][selection->x].type == EMPTY))
+            {
+                possible_moves->squares[possible_moves->count].x = selection->x;
+                possible_moves->squares[possible_moves->count].y = selection->y - 1;
+                possible_moves->count++;
+            }
+
+            // Two spaces forward.
+            if ((selection->y == 6) && 
+                (board[selection->y-1][selection->x].type == EMPTY) && 
+                (board[selection->y-2][selection->x].type == EMPTY))
+            {
+                possible_moves->squares[possible_moves->count].x = selection->x;
+                possible_moves->squares[possible_moves->count].y = selection->y - 2;
+                possible_moves->count++;
+            }
+
+            // Diagonal to the left (attack).
+            if (((selection->x - 1) >= 0) && ((selection->y - 1) >= 0) && 
+                (board[selection->y - 1][selection->x - 1].color == BLACK))
+            {
+                possible_moves->squares[possible_moves->count].x = selection->x-1;
+                possible_moves->squares[possible_moves->count].y = selection->y-1;
+                possible_moves->count++;
+            }
+
+            // Diagonal to the right (attack).
+            if (((selection->x + 1) < 8) && ((selection->y - 1) >= 0) && 
+                (board[selection->y - 1][selection->x + 1].color == BLACK))
+            {
+                possible_moves->squares[possible_moves->count].x = selection->x+1;
+                possible_moves->squares[possible_moves->count].y = selection->y-1;
+                possible_moves->count++;
+            }
+        break;
+
+        case BLACK_PAWN:
+            // One space forward.
+            if (((selection->y + 1) < 8) && (board[selection->y+1][selection->x].type == EMPTY))
+            {
+                possible_moves->squares[possible_moves->count].x = selection->x;
+                possible_moves->squares[possible_moves->count].y = selection->y+1;
+                possible_moves->count++;
+            }
+
+            // Two spaces forward.
+            if ((selection->y == 1) && 
+                (board[selection->y+1][selection->x].type == EMPTY) && 
+                (board[selection->y+2][selection->x].type == EMPTY))
+            {
+                possible_moves->squares[possible_moves->count].x = selection->x;
+                possible_moves->squares[possible_moves->count].y = selection->y+2;
+                possible_moves->count++;
+            }
+
+            // Diagonal to the left (attack).
+            if (((selection->x + 1) < 8) && ((selection->y + 1) < 8) && 
+                (board[selection->y + 1][selection->x + 1].color == WHITE))
+            {
+                possible_moves->squares[possible_moves->count].x = selection->x+1;
+                possible_moves->squares[possible_moves->count].y = selection->y+1;
+                possible_moves->count++;
+            }
+
+            // Diagonal to the right (attack).
+            if (((selection->x - 1) >= 0) && ((selection->y + 1) < 8) && 
+                (board[selection->y + 1][selection->x - 1].color == WHITE))
+            {
+                possible_moves->squares[possible_moves->count].x = selection->x-1;
+                possible_moves->squares[possible_moves->count].y = selection->y+1;
+                possible_moves->count++;
+            }
+        break;
+
+        case WHITE_ROOK:
+        case BLACK_ROOK:
+            add_possible_moves_long(possible_moves, selection, board, N);
+            add_possible_moves_long(possible_moves, selection, board, E);
+            add_possible_moves_long(possible_moves, selection, board, S);
+            add_possible_moves_long(possible_moves, selection, board, W);
+        break;
+
+        case WHITE_KNIGHT:
+        case BLACK_KNIGHT:
+            add_simple_possible_move(possible_moves, selection, board, 2, 1, 0, 0);
+            add_simple_possible_move(possible_moves, selection, board, 2, 0, 1, 0);
+
+            add_simple_possible_move(possible_moves, selection, board, 1, 2, 0, 0);
+            add_simple_possible_move(possible_moves, selection, board, 0, 2, 0, 1);
+
+            add_simple_possible_move(possible_moves, selection, board, 1, 0, 2, 0);
+            add_simple_possible_move(possible_moves, selection, board, 0, 0, 2, 1);
+
+            add_simple_possible_move(possible_moves, selection, board, 0, 1, 0, 2);
+            add_simple_possible_move(possible_moves, selection, board, 0, 0, 1, 2);
+        break;
+
+        case WHITE_BISHOP:
+        case BLACK_BISHOP:
+            add_possible_moves_long(possible_moves, selection, board, NE);
+            add_possible_moves_long(possible_moves, selection, board, NW);
+            add_possible_moves_long(possible_moves, selection, board, SE);
+            add_possible_moves_long(possible_moves, selection, board, SW);
+        break;
+
+        case WHITE_QUEEN:
+        case BLACK_QUEEN:
+            add_possible_moves_long(possible_moves, selection, board, N);
+            add_possible_moves_long(possible_moves, selection, board, E);
+            add_possible_moves_long(possible_moves, selection, board, S);
+            add_possible_moves_long(possible_moves, selection, board, W);
+
+            add_possible_moves_long(possible_moves, selection, board, NE);
+            add_possible_moves_long(possible_moves, selection, board, NW);
+            add_possible_moves_long(possible_moves, selection, board, SE);
+            add_possible_moves_long(possible_moves, selection, board, SW);
+        break;
+
+        case WHITE_KING:
+        case BLACK_KING:
+            add_simple_possible_move(possible_moves, selection, board, 1, 0, 0, 0);
+            add_simple_possible_move(possible_moves, selection, board, 0, 1, 0, 0);
+            add_simple_possible_move(possible_moves, selection, board, 0, 0, 1, 0);
+            add_simple_possible_move(possible_moves, selection, board, 0, 0, 0, 1);
+
+            add_simple_possible_move(possible_moves, selection, board, 1, 1, 0, 0);
+            add_simple_possible_move(possible_moves, selection, board, 1, 0, 1, 0);
+            add_simple_possible_move(possible_moves, selection, board, 0, 1, 0, 1);
+            add_simple_possible_move(possible_moves, selection, board, 0, 0, 1, 1);
+        break;
+
+        default:
+        break;
+
+    }
+}
+
+int is_possible_move(Possible_Moves *possible_moves, int x, int y)
+{
+    for (int i = 0; i < possible_moves->count; i++)
+    {
+        if ((possible_moves->squares[i].x == x) && (possible_moves->squares[i].y == y))
+        {
+            return 1;
+        }
+    }
+
+    return 0;
+}
+
 Tile starting_board[8][8] = {
     {
         {BLACK_ROOK, BLACK, BLACK_ROOK_PATH, NULL}, 
@@ -302,124 +463,12 @@ void render(SDL_Renderer *renderer, Tile board[][8], Game_State *state)
         // Button right corner is (7, 7)
         //
 
-        // TODO(bkaylor): This should live in the game state, so we know if they are making a valid move or not.
-        //                Also so that the AI can build their own and use it to play.
         Possible_Moves possible_moves; 
         possible_moves.count = 0;
 
+        get_possible_moves(&possible_moves, state->selection, board);
+
         SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255);
-
-        Selection_Info *selection = state->selection;
-        // TODO(bkaylor): Do this for black pieces too.
-        switch (selection->tile->type)
-        {
-            case EMPTY:
-            break;
-
-            case WHITE_PAWN:
-                // One space forward.
-                if (((selection->y - 1) < 8) && (board[selection->y-1][selection->x].type == EMPTY))
-                {
-                    move_rect.x = (selection->x * 22) + 2;
-                    move_rect.y = ((selection->y-1) * 22) + 2;
-
-                    SDL_RenderFillRect(renderer, &move_rect);
-                }
-
-                // Two spaces forward.
-                if ((selection->y == 6) && 
-                    (board[selection->y-1][selection->x].type == EMPTY) && 
-                    (board[selection->y-2][selection->x].type == EMPTY))
-                {
-                    move_rect.x = (selection->x * 22) +2;
-                    move_rect.y = ((selection->y -2) * 22) + 2;
-
-                    SDL_RenderFillRect(renderer, &move_rect);
-                }
-
-                // Diagonal to the left (attack).
-                if (((selection->x - 1) < 8) && ((selection->y - 1) < 8) && 
-                    (board[selection->y - 1][selection->x - 1].color == BLACK))
-                {
-                    move_rect.x = ((selection->x - 1) * 22) + 2;
-                    move_rect.y = ((selection->y - 1) * 22) + 2;
-
-                    SDL_RenderFillRect(renderer, &move_rect);
-                }
-
-                // Diagonal to the right (attack).
-                if (((selection->x + 1) < 8) && ((selection->y - 1) < 8) && 
-                    (board[selection->y - 1][selection->x + 1].color == BLACK))
-                {
-                    move_rect.x = ((selection->x + 1) * 22) + 2;
-                    move_rect.y = ((selection->y - 1) * 22) + 2;
-
-                    SDL_RenderFillRect(renderer, &move_rect);
-                }
-            break;
-
-            case WHITE_ROOK:
-                add_possible_moves_long(&possible_moves, selection, board, N);
-                add_possible_moves_long(&possible_moves, selection, board, E);
-                add_possible_moves_long(&possible_moves, selection, board, S);
-                add_possible_moves_long(&possible_moves, selection, board, W);
-            break;
-
-            case WHITE_KNIGHT:
-                add_simple_possible_move(&possible_moves, selection, board, 2, 1, 0, 0);
-                add_simple_possible_move(&possible_moves, selection, board, 2, 0, 1, 0);
-
-                add_simple_possible_move(&possible_moves, selection, board, 1, 2, 0, 0);
-                add_simple_possible_move(&possible_moves, selection, board, 0, 2, 0, 1);
-
-                add_simple_possible_move(&possible_moves, selection, board, 1, 0, 2, 0);
-                add_simple_possible_move(&possible_moves, selection, board, 0, 0, 2, 1);
-
-                add_simple_possible_move(&possible_moves, selection, board, 0, 1, 0, 2);
-                add_simple_possible_move(&possible_moves, selection, board, 0, 0, 1, 2);
-            break;
-
-            case WHITE_BISHOP:
-                add_possible_moves_long(&possible_moves, selection, board, NE);
-                add_possible_moves_long(&possible_moves, selection, board, NW);
-                add_possible_moves_long(&possible_moves, selection, board, SE);
-                add_possible_moves_long(&possible_moves, selection, board, SW);
-            break;
-
-            case WHITE_QUEEN:
-                add_possible_moves_long(&possible_moves, selection, board, N);
-                add_possible_moves_long(&possible_moves, selection, board, E);
-                add_possible_moves_long(&possible_moves, selection, board, S);
-                add_possible_moves_long(&possible_moves, selection, board, W);
-
-                add_possible_moves_long(&possible_moves, selection, board, NE);
-                add_possible_moves_long(&possible_moves, selection, board, NW);
-                add_possible_moves_long(&possible_moves, selection, board, SE);
-                add_possible_moves_long(&possible_moves, selection, board, SW);
-            break;
-
-            case WHITE_KING:
-                add_simple_possible_move(&possible_moves, selection, board, 1, 0, 0, 0);
-                add_simple_possible_move(&possible_moves, selection, board, 0, 1, 0, 0);
-                add_simple_possible_move(&possible_moves, selection, board, 0, 0, 1, 0);
-                add_simple_possible_move(&possible_moves, selection, board, 0, 0, 0, 1);
-
-                add_simple_possible_move(&possible_moves, selection, board, 1, 1, 0, 0);
-                add_simple_possible_move(&possible_moves, selection, board, 1, 0, 1, 0);
-                add_simple_possible_move(&possible_moves, selection, board, 0, 1, 0, 1);
-                add_simple_possible_move(&possible_moves, selection, board, 0, 0, 1, 1);
-            break;
-
-            case BLACK_PAWN:
-            case BLACK_ROOK:
-            case BLACK_KNIGHT:
-            case BLACK_BISHOP:
-            case BLACK_QUEEN:
-            case BLACK_KING:
-            default:
-            break;
-
-        }
 
         for (int i = 0; i < possible_moves.count; i++)
         {
@@ -464,7 +513,7 @@ void render_console(SDL_Renderer *renderer, Mouse_State *mouse_state, Game_State
     SDL_RenderClear(renderer);
     SDL_RenderCopy(renderer, dog_texture, NULL, NULL);
 
-    if ((mouse_state->pressed == SDL_BUTTON(SDL_BUTTON_LEFT)) && state->selection->selected)
+    if ((mouse_state->pressed == SDL_BUTTON_LEFT) && state->selection->selected)
     {
         SDL_Rect mouse_rect;
         mouse_rect.x = mouse_state->x;
@@ -473,6 +522,17 @@ void render_console(SDL_Renderer *renderer, Mouse_State *mouse_state, Game_State
         mouse_rect.h = 22;
 
         SDL_RenderCopy(renderer, state->selection->tile->texture, NULL, &mouse_rect);
+    }
+
+    if (mouse_state->pressed == SDL_BUTTON_RIGHT)
+    {
+        SDL_Rect mouse_rect;
+        mouse_rect.x = mouse_state->x;
+        mouse_rect.y = mouse_state->y;
+        mouse_rect.w = 22;
+        mouse_rect.h = 22;
+
+        SDL_RenderCopy(renderer, dog_texture, NULL, &mouse_rect);
     }
 
     SDL_RenderPresent(renderer);
@@ -502,7 +562,7 @@ void load_images(SDL_Renderer *renderer)
     SDL_FreeSurface(dog_surface);
 }
 
-void update(Tile board[][8], Game_State *state, Mouse_State *mouse_state)
+int update(Tile board[][8], Game_State *state, Mouse_State *mouse_state)
 {
     state->hovered->x = (mouse_state->x -2) / 22;
     state->hovered->y = (mouse_state->y -2) / 22;
@@ -515,25 +575,35 @@ void update(Tile board[][8], Game_State *state, Mouse_State *mouse_state)
     {
         if (state->selection->selected) 
         {
-            if (mouse_state->pressed == SDL_BUTTON(SDL_BUTTON_LEFT))
+            Possible_Moves possible_moves; 
+            possible_moves.count = 0;
+
+            get_possible_moves(&possible_moves, state->selection, board);
+
+            if (mouse_state->pressed == SDL_BUTTON_LEFT)
             {
-                board[state->hovered->y][state->hovered->x].type = state->selection->tile->type;
-                board[state->hovered->y][state->hovered->x].color= state->selection->tile->color;
-                board[state->hovered->y][state->hovered->x].texture = state->selection->tile->texture;
+                if (is_possible_move(&possible_moves, state->hovered->x, state->hovered->y))
+                {
+                    board[state->hovered->y][state->hovered->x].type = state->selection->tile->type;
+                    board[state->hovered->y][state->hovered->x].color= state->selection->tile->color;
+                    board[state->hovered->y][state->hovered->x].texture = state->selection->tile->texture;
 
-                board[state->selection->y][state->selection->x].type = EMPTY;
-                state->selection->selected = 0;
+                    // Reset the square the piece moved from.
+                    board[state->selection->y][state->selection->x].type = EMPTY;
+                    board[state->selection->y][state->selection->x].color = NONE;
+                    state->selection->selected = 0;
 
-                state->player_turn = 0;
+                    state->player_turn = 0;
+                }
             }
-            else if (mouse_state->pressed == SDL_BUTTON(SDL_BUTTON_RIGHT))
+            else if (mouse_state->pressed == SDL_BUTTON_RIGHT)
             {
                 state->selection->selected = 0;
             }
         }
         else
         {
-            if ((mouse_state->pressed == SDL_BUTTON(SDL_BUTTON_LEFT)) && (state->hovered->tile->type != EMPTY))
+            if ((mouse_state->pressed == SDL_BUTTON_LEFT) && (state->hovered->tile->type != EMPTY))
             {
                 state->selection->x = state->hovered->x;
                 state->selection->y = state->hovered->y;
@@ -545,8 +615,74 @@ void update(Tile board[][8], Game_State *state, Mouse_State *mouse_state)
     else
     {
         // AI's turn.
+        Possible_Moves possible_moves;
+        Selection_Info selection = {0};
+
+        // Get a random piece's possible moves.
+        Tile black_pieces[16]; 
+        Square black_pieces_locations[16];
+        int black_pieces_count = 0;
+
+        for (int i = 0; i < 8; i++)
+        {
+            for (int j = 0; j < 8; j++)
+            {
+                if (board[i][j].color == BLACK)
+                {
+                    black_pieces[black_pieces_count].type = board[i][j].type;
+                    black_pieces[black_pieces_count].color = board[i][j].color;
+                    black_pieces[black_pieces_count].texture = board[i][j].texture;
+
+                    black_pieces_locations[black_pieces_count].x = j;
+                    black_pieces_locations[black_pieces_count].y = i;
+
+                    black_pieces_count++;
+                }
+            }
+        }
+
+        while (possible_moves.count == 0)
+        {
+            int random_piece_index = rand() % black_pieces_count;
+            selection.x = black_pieces_locations[random_piece_index].x;
+            selection.y = black_pieces_locations[random_piece_index].y;
+            selection.tile = &black_pieces[random_piece_index];
+
+            get_possible_moves(&possible_moves, &selection, board);
+        }
+
+        // Get a random possible move.
+        int random_move = rand() % possible_moves.count;
+        board[possible_moves.squares[random_move].y][possible_moves.squares[random_move].x].type = selection.tile->type;
+        board[possible_moves.squares[random_move].y][possible_moves.squares[random_move].x].color = selection.tile->color;
+        board[possible_moves.squares[random_move].y][possible_moves.squares[random_move].x].texture = selection.tile->texture;
+
+        // Reset the square the piece moved from.
+        board[selection.y][selection.x].type = EMPTY;
+        board[selection.y][selection.x].color = NONE;
+
         state->player_turn = 1;
     }
+
+    // TODO(bkaylor): Check if someone has won.
+    int kings = 0;
+    for (int i = 0; i < 8; i++)
+    {
+        for (int j = 0; j < 8; j++)
+        {
+            if (board[i][j].type == BLACK_KING || board[i][j].type == WHITE_KING)
+            {
+                kings++;
+            }
+        }
+    }
+
+    if (kings != 2)
+    {
+        return 1;
+    }
+
+    return 0;
 }
 
 void get_input(int *quit, Mouse_State *mouse_state, int *console)
@@ -640,6 +776,7 @@ int main(int argc, char *argv[])
     printf("Done!\n");
 
     // Setup main loop
+    srand(time(NULL));
     int quit = 0;
     int console = 0;
     Mouse_State mouse_state = {0};
@@ -678,7 +815,7 @@ int main(int argc, char *argv[])
             } 
             else 
             {
-                update(starting_board, &state, &mouse_state);
+                quit = update(starting_board, &state, &mouse_state);
                 render(ren, starting_board, &state);
             }
 
