@@ -664,7 +664,7 @@ int update(Tile board[][8], Game_State *state, Mouse_State *mouse_state)
         state->player_turn = 1;
     }
 
-    // TODO(bkaylor): Check if someone has won.
+    // Check if someone has won.
     int kings = 0;
     for (int i = 0; i < 8; i++)
     {
@@ -732,6 +732,8 @@ void get_input(int *quit, Mouse_State *mouse_state, int *console)
     }
 }
 
+// Note that the printf's don't actually go anywhere.
+// I could have the app set up an attached console to print to. Or it could go to the dog page.
 int main(int argc, char *argv[])
 {
     printf("Chess is a game...\n");
@@ -819,6 +821,7 @@ int main(int argc, char *argv[])
                 render(ren, starting_board, &state);
             }
 
+            // This fps stuff is not used.
             fps_frames++;
 
             if (fps_start < SDL_GetTicks() - FPS_INTERVAL * 1000)
