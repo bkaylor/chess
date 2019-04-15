@@ -45,11 +45,28 @@ typedef enum Piece_Color_Enum {
     NONE
 } Piece_Color;
 
+typedef enum King_State_Enum {
+    OK,
+    CHECK,
+    CHECKMATE
+} King_State;
+
+typedef struct Square_Struct {
+    int x;
+    int y;
+} Square;
+
+typedef struct Possible_Moves_Struct {
+    Square squares[32];
+    int count;
+} Possible_Moves;
+
 typedef struct Tile_Struct {
     Piece_Type type;
     Piece_Color color;
     char *texture_path;
     SDL_Texture *texture;
+    Possible_Moves *possible_moves;
 } Tile;
 
 typedef struct Mouse_State_Struct {
@@ -69,17 +86,11 @@ typedef struct Game_State_Struct {
     Selection_Info *selection;
     Selection_Info *hovered;
     int player_turn;
+    King_State black_king_state;
+    King_State white_king_state;
 } Game_State;
 
-typedef struct Square_Struct {
-    int x;
-    int y;
-} Square;
 
-typedef struct Possible_Moves_Struct {
-    Square squares[30];
-    int count;
-} Possible_Moves;
 
 typedef enum Move_Killability_Enum {
     CAN,
@@ -571,6 +582,24 @@ int update(Tile board[][8], Game_State *state, Mouse_State *mouse_state)
     if (state->hovered->x > 7) state->hovered->x = 7;
     if (state->hovered->y > 7) state->hovered->y = 7;
 
+    // Get every piece's possible moves.
+    for (int i = 0; i < 8; i++)
+    {
+        for (int j = 0; j < 8; j++)
+        {
+            if (board[j][i].type != EMPTY)
+            {
+                Selection_Info temp_selection = {0};
+                temp_selection.x = j;
+                temp_selection.y = i;
+                temp_selection.selected = 0;
+                temp_selection.tile = &board[j][i];
+
+                get_possible_moves(temp_selection.tile->possible_moves, &temp_selection, board);
+            }
+        }
+    }
+
     if (state->player_turn)
     {
         if (state->selection->selected) 
@@ -664,6 +693,8 @@ int update(Tile board[][8], Game_State *state, Mouse_State *mouse_state)
         state->player_turn = 1;
     }
 
+    // TODO(bkaylor): Check the state of each king.
+
     // Check if someone has won.
     int kings = 0;
     for (int i = 0; i < 8; i++)
@@ -732,8 +763,6 @@ void get_input(int *quit, Mouse_State *mouse_state, int *console)
     }
 }
 
-// Note that the printf's don't actually go anywhere.
-// I could have the app set up an attached console to print to. Or it could go to the dog page.
 int main(int argc, char *argv[])
 {
     printf("Chess is a game...\n");
@@ -784,6 +813,18 @@ int main(int argc, char *argv[])
     Mouse_State mouse_state = {0};
     // Tile board[8][8];
     // memcpy(board, starting_board, sizeof(starting_board[0]) * 8 * 8);
+    //
+
+    // TODO(bkaylor): Can I get away with not malloc'ing this?
+    for (int i = 0; i < 8; i++)
+    {
+        for (int j = 0; j < 8; j++)
+        {
+            starting_board[j][i].possible_moves = malloc(sizeof(Possible_Moves));
+            // starting_board[j][i].possible_moves->squares[32];
+            starting_board[j][i].possible_moves->count = 0;
+        }
+    }
 
     Selection_Info hovered = {0};
     Selection_Info selection = {0};
@@ -791,6 +832,8 @@ int main(int argc, char *argv[])
     state.hovered = &hovered;
     state.selection = &selection;
     state.player_turn = 1;
+    state.black_king_state = OK;
+    state.white_king_state = OK;
 
     // Main loop
     const float FPS_INTERVAL = 1.0f;

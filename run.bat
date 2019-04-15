@@ -1,3 +1,3 @@
 @pushd bin
-chess.exe
+chess_msvc.exe
 @popd
