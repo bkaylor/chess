@@ -6,7 +6,7 @@ A Chess game vs a very bad AI.
 ## Usage
 Run run.bat.
 
-Click on a piece to select it. 
+Click on a piece to select it. Right click to unselect it.
 
 Click a valid move to move the piece there.
 
