@@ -5,23 +5,57 @@
 #include "SDL_ttf.h"
 #include "SDL_image.h"
 
-#define SCREEN_W 180
-#define SCREEN_H 180
+#define SCREEN_W 400
+#define SCREEN_H 400
 
-#define BLACK_PAWN_PATH "../assets/chess/black_pawn.png"
-#define BLACK_ROOK_PATH "../assets/chess/black_rook.png"
-#define BLACK_KNIGHT_PATH "../assets/chess/black_knight.png"
-#define BLACK_BISHOP_PATH "../assets/chess/black_bishop.png"
-#define BLACK_QUEEN_PATH "../assets/chess/black_queen.png"
-#define BLACK_KING_PATH "../assets/chess/black_king.png"
-#define WHITE_PAWN_PATH "../assets/chess/white_pawn.png"
-#define WHITE_ROOK_PATH "../assets/chess/white_rook.png"
-#define WHITE_KNIGHT_PATH "../assets/chess/white_knight.png"
-#define WHITE_BISHOP_PATH "../assets/chess/white_bishop.png"
-#define WHITE_QUEEN_PATH "../assets/chess/white_queen.png"
-#define WHITE_KING_PATH "../assets/chess/white_king.png"
-#define BOARD_PATH "../assets/chess/board.bmp"
-#define DOG_PATH "../assets/chess/dog.bmp"
+#define BLACK_PAWN_PATH_DEFAULT "../assets/chess/black_pawn.png"
+#define BLACK_ROOK_PATH_DEFAULT "../assets/chess/black_rook.png"
+#define BLACK_KNIGHT_PATH_DEFAULT "../assets/chess/black_knight.png"
+#define BLACK_BISHOP_PATH_DEFAULT "../assets/chess/black_bishop.png"
+#define BLACK_QUEEN_PATH_DEFAULT "../assets/chess/black_queen.png"
+#define BLACK_KING_PATH_DEFAULT "../assets/chess/black_king.png"
+#define WHITE_PAWN_PATH_DEFAULT "../assets/chess/white_pawn.png"
+#define WHITE_ROOK_PATH_DEFAULT "../assets/chess/white_rook.png"
+#define WHITE_KNIGHT_PATH_DEFAULT "../assets/chess/white_knight.png"
+#define WHITE_BISHOP_PATH_DEFAULT "../assets/chess/white_bishop.png"
+#define WHITE_QUEEN_PATH_DEFAULT "../assets/chess/white_queen.png"
+#define WHITE_KING_PATH_DEFAULT "../assets/chess/white_king.png"
+
+#define BLACK_PAWN_PATH_GREEN "../assets/chess_green/black_pawn.png"
+#define BLACK_ROOK_PATH_GREEN "../assets/chess_green/black_rook.png"
+#define BLACK_KNIGHT_PATH_GREEN "../assets/chess_green/black_knight.png"
+#define BLACK_BISHOP_PATH_GREEN "../assets/chess_green/black_bishop.png"
+#define BLACK_QUEEN_PATH_GREEN "../assets/chess_green/black_queen.png"
+#define BLACK_KING_PATH_GREEN "../assets/chess_green/black_king.png"
+#define WHITE_PAWN_PATH_GREEN "../assets/chess_green/white_pawn.png"
+#define WHITE_ROOK_PATH_GREEN "../assets/chess_green/white_rook.png"
+#define WHITE_KNIGHT_PATH_GREEN "../assets/chess_green/white_knight.png"
+#define WHITE_BISHOP_PATH_GREEN "../assets/chess_green/white_bishop.png"
+#define WHITE_QUEEN_PATH_GREEN "../assets/chess_green/white_queen.png"
+#define WHITE_KING_PATH_GREEN "../assets/chess_green/white_king.png"
+
+#define BLACK_PAWN_PATH_PINK "../assets/chess_pink/black_pawn.png"
+#define BLACK_ROOK_PATH_PINK "../assets/chess_pink/black_rook.png"
+#define BLACK_KNIGHT_PATH_PINK "../assets/chess_pink/black_knight.png"
+#define BLACK_BISHOP_PATH_PINK "../assets/chess_pink/black_bishop.png"
+#define BLACK_QUEEN_PATH_PINK "../assets/chess_pink/black_queen.png"
+#define BLACK_KING_PATH_PINK "../assets/chess_pink/black_king.png"
+#define WHITE_PAWN_PATH_PINK "../assets/chess_pink/white_pawn.png"
+#define WHITE_ROOK_PATH_PINK "../assets/chess_pink/white_rook.png"
+#define WHITE_KNIGHT_PATH_PINK "../assets/chess_pink/white_knight.png"
+#define WHITE_BISHOP_PATH_PINK "../assets/chess_pink/white_bishop.png"
+#define WHITE_QUEEN_PATH_PINK "../assets/chess_pink/white_queen.png"
+#define WHITE_KING_PATH_PINK "../assets/chess_pink/white_king.png"
+
+#define BOARD_PATH_DEFAULT "../assets/chess/board.png"
+#define BOARD_PATH_GREEN "../assets/chess_green/board.png"
+#define BOARD_PATH_PINK "../assets/chess_pink/board.png"
+
+typedef enum Asset_Color_Enum {
+    DEFAULT,
+    GREEN,
+    PINK
+} Asset_Color;
 
 typedef enum Piece_Enum {
     EMPTY,
@@ -64,7 +98,9 @@ typedef struct Possible_Moves_Struct {
 typedef struct Tile_Struct {
     Piece_Type type;
     Piece_Color color;
-    char *texture_path;
+    char *texture_path_default;
+    char *texture_path_green;
+    char *texture_path_pink;
     SDL_Texture *texture;
     Possible_Moves *possible_moves;
 } Tile;
@@ -351,34 +387,24 @@ int is_possible_move(Possible_Moves *possible_moves, int x, int y)
 
 Tile starting_board[8][8] = {
     {
-        {BLACK_ROOK, BLACK, BLACK_ROOK_PATH, NULL}, 
-        {BLACK_BISHOP, BLACK, BLACK_BISHOP_PATH, NULL}, 
-        {BLACK_KNIGHT, BLACK, BLACK_KNIGHT_PATH, NULL},
-        {BLACK_QUEEN, BLACK, BLACK_QUEEN_PATH, NULL},
-        {BLACK_KING, BLACK, BLACK_KING_PATH, NULL},
-        {BLACK_KNIGHT, BLACK, BLACK_KNIGHT_PATH, NULL},
-        {BLACK_BISHOP, BLACK, BLACK_BISHOP_PATH, NULL},
-        {BLACK_ROOK, BLACK, BLACK_ROOK_PATH, NULL}
+        {BLACK_ROOK, BLACK, BLACK_ROOK_PATH_DEFAULT, BLACK_ROOK_PATH_GREEN, BLACK_ROOK_PATH_PINK, NULL}, 
+        {BLACK_BISHOP, BLACK, BLACK_BISHOP_PATH_DEFAULT, BLACK_BISHOP_PATH_GREEN, BLACK_BISHOP_PATH_PINK, NULL}, 
+        {BLACK_KNIGHT, BLACK, BLACK_KNIGHT_PATH_DEFAULT, BLACK_KNIGHT_PATH_GREEN, BLACK_KNIGHT_PATH_PINK, NULL},
+        {BLACK_QUEEN, BLACK, BLACK_QUEEN_PATH_DEFAULT, BLACK_QUEEN_PATH_GREEN, BLACK_QUEEN_PATH_PINK, NULL},
+        {BLACK_KING, BLACK, BLACK_KING_PATH_DEFAULT, BLACK_KING_PATH_GREEN, BLACK_KING_PATH_PINK, NULL},
+        {BLACK_KNIGHT, BLACK, BLACK_KNIGHT_PATH_DEFAULT, BLACK_KNIGHT_PATH_GREEN, BLACK_KNIGHT_PATH_PINK, NULL},
+        {BLACK_BISHOP, BLACK, BLACK_BISHOP_PATH_DEFAULT, BLACK_BISHOP_PATH_GREEN, BLACK_BISHOP_PATH_PINK, NULL},
+        {BLACK_ROOK, BLACK, BLACK_ROOK_PATH_DEFAULT, BLACK_ROOK_PATH_GREEN, BLACK_ROOK_PATH_PINK, NULL}
     },
     {
-        {BLACK_PAWN, BLACK, BLACK_PAWN_PATH, NULL}, 
-        {BLACK_PAWN, BLACK, BLACK_PAWN_PATH, NULL},
-        {BLACK_PAWN, BLACK, BLACK_PAWN_PATH, NULL},
-        {BLACK_PAWN, BLACK, BLACK_PAWN_PATH, NULL},
-        {BLACK_PAWN, BLACK, BLACK_PAWN_PATH, NULL},
-        {BLACK_PAWN, BLACK, BLACK_PAWN_PATH, NULL},
-        {BLACK_PAWN, BLACK, BLACK_PAWN_PATH, NULL},
-        {BLACK_PAWN, BLACK, BLACK_PAWN_PATH, NULL}
-    },
-    {
-        {EMPTY, NONE, "", NULL},
-        {EMPTY, NONE, "", NULL},
-        {EMPTY, NONE, "", NULL},
-        {EMPTY, NONE, "", NULL},    
-        {EMPTY, NONE, "", NULL},
-        {EMPTY, NONE, "", NULL},
-        {EMPTY, NONE, "", NULL},
-        {EMPTY, NONE, "", NULL},    
+        {BLACK_PAWN, BLACK, BLACK_PAWN_PATH_DEFAULT, BLACK_PAWN_PATH_GREEN, BLACK_PAWN_PATH_PINK, NULL}, 
+        {BLACK_PAWN, BLACK, BLACK_PAWN_PATH_DEFAULT, BLACK_PAWN_PATH_GREEN, BLACK_PAWN_PATH_PINK, NULL},
+        {BLACK_PAWN, BLACK, BLACK_PAWN_PATH_DEFAULT, BLACK_PAWN_PATH_GREEN, BLACK_PAWN_PATH_PINK, NULL},
+        {BLACK_PAWN, BLACK, BLACK_PAWN_PATH_DEFAULT, BLACK_PAWN_PATH_GREEN, BLACK_PAWN_PATH_PINK, NULL},
+        {BLACK_PAWN, BLACK, BLACK_PAWN_PATH_DEFAULT, BLACK_PAWN_PATH_GREEN, BLACK_PAWN_PATH_PINK, NULL},
+        {BLACK_PAWN, BLACK, BLACK_PAWN_PATH_DEFAULT, BLACK_PAWN_PATH_GREEN, BLACK_PAWN_PATH_PINK, NULL},
+        {BLACK_PAWN, BLACK, BLACK_PAWN_PATH_DEFAULT, BLACK_PAWN_PATH_GREEN, BLACK_PAWN_PATH_PINK, NULL},
+        {BLACK_PAWN, BLACK, BLACK_PAWN_PATH_DEFAULT, BLACK_PAWN_PATH_GREEN, BLACK_PAWN_PATH_PINK, NULL}
     },
     {
         {EMPTY, NONE, "", NULL},
@@ -411,61 +437,80 @@ Tile starting_board[8][8] = {
         {EMPTY, NONE, "", NULL},    
     },
     {
-        {WHITE_PAWN, WHITE, WHITE_PAWN_PATH, NULL}, 
-        {WHITE_PAWN, WHITE, WHITE_PAWN_PATH, NULL},
-        {WHITE_PAWN, WHITE, WHITE_PAWN_PATH, NULL},
-        {WHITE_PAWN, WHITE, WHITE_PAWN_PATH, NULL},
-        {WHITE_PAWN, WHITE, WHITE_PAWN_PATH, NULL},
-        {WHITE_PAWN, WHITE, WHITE_PAWN_PATH, NULL},
-        {WHITE_PAWN, WHITE, WHITE_PAWN_PATH, NULL},
-        {WHITE_PAWN, WHITE, WHITE_PAWN_PATH, NULL}
+        {EMPTY, NONE, "", NULL},
+        {EMPTY, NONE, "", NULL},
+        {EMPTY, NONE, "", NULL},
+        {EMPTY, NONE, "", NULL},    
+        {EMPTY, NONE, "", NULL},
+        {EMPTY, NONE, "", NULL},
+        {EMPTY, NONE, "", NULL},
+        {EMPTY, NONE, "", NULL},    
     },
     {
-        {WHITE_ROOK, WHITE, WHITE_ROOK_PATH, NULL}, 
-        {WHITE_BISHOP, WHITE, WHITE_BISHOP_PATH, NULL}, 
-        {WHITE_KNIGHT, WHITE, WHITE_KNIGHT_PATH, NULL},
-        {WHITE_KING, WHITE, WHITE_KING_PATH, NULL},
-        {WHITE_QUEEN, WHITE, WHITE_QUEEN_PATH, NULL},
-        {WHITE_KNIGHT, WHITE, WHITE_KNIGHT_PATH, NULL},
-        {WHITE_BISHOP, WHITE, WHITE_BISHOP_PATH, NULL},
-        {WHITE_ROOK, WHITE, WHITE_ROOK_PATH, NULL}
+        {WHITE_PAWN, WHITE, WHITE_PAWN_PATH_DEFAULT, WHITE_PAWN_PATH_GREEN, WHITE_PAWN_PATH_PINK, NULL}, 
+        {WHITE_PAWN, WHITE, WHITE_PAWN_PATH_DEFAULT, WHITE_PAWN_PATH_GREEN, WHITE_PAWN_PATH_PINK, NULL},
+        {WHITE_PAWN, WHITE, WHITE_PAWN_PATH_DEFAULT, WHITE_PAWN_PATH_GREEN, WHITE_PAWN_PATH_PINK, NULL},
+        {WHITE_PAWN, WHITE, WHITE_PAWN_PATH_DEFAULT, WHITE_PAWN_PATH_GREEN, WHITE_PAWN_PATH_PINK, NULL},
+        {WHITE_PAWN, WHITE, WHITE_PAWN_PATH_DEFAULT, WHITE_PAWN_PATH_GREEN, WHITE_PAWN_PATH_PINK, NULL},
+        {WHITE_PAWN, WHITE, WHITE_PAWN_PATH_DEFAULT, WHITE_PAWN_PATH_GREEN, WHITE_PAWN_PATH_PINK, NULL},
+        {WHITE_PAWN, WHITE, WHITE_PAWN_PATH_DEFAULT, WHITE_PAWN_PATH_GREEN, WHITE_PAWN_PATH_PINK, NULL},
+        {WHITE_PAWN, WHITE, WHITE_PAWN_PATH_DEFAULT, WHITE_PAWN_PATH_GREEN, WHITE_PAWN_PATH_PINK, NULL}
+    },
+    {
+        {WHITE_ROOK, WHITE, WHITE_ROOK_PATH_DEFAULT, WHITE_ROOK_PATH_GREEN, WHITE_ROOK_PATH_PINK, NULL}, 
+        {WHITE_BISHOP, WHITE, WHITE_BISHOP_PATH_DEFAULT, WHITE_BISHOP_PATH_GREEN, WHITE_BISHOP_PATH_PINK, NULL}, 
+        {WHITE_KNIGHT, WHITE, WHITE_KNIGHT_PATH_DEFAULT, WHITE_KNIGHT_PATH_GREEN, WHITE_KNIGHT_PATH_PINK, NULL},
+        {WHITE_KING, WHITE, WHITE_KING_PATH_DEFAULT, WHITE_KING_PATH_GREEN, WHITE_KING_PATH_PINK, NULL},
+        {WHITE_QUEEN, WHITE, WHITE_QUEEN_PATH_DEFAULT, WHITE_QUEEN_PATH_GREEN, WHITE_QUEEN_PATH_PINK, NULL},
+        {WHITE_KNIGHT, WHITE, WHITE_KNIGHT_PATH_DEFAULT, WHITE_KNIGHT_PATH_GREEN, WHITE_KNIGHT_PATH_PINK, NULL},
+        {WHITE_BISHOP, WHITE, WHITE_BISHOP_PATH_DEFAULT, WHITE_BISHOP_PATH_GREEN, WHITE_BISHOP_PATH_PINK, NULL},
+        {WHITE_ROOK, WHITE, WHITE_ROOK_PATH_DEFAULT, WHITE_ROOK_PATH_GREEN, WHITE_ROOK_PATH_PINK, NULL}
     },
 };
 
 SDL_Texture *board_texture;
 SDL_Texture *dog_texture;
 
-void render(SDL_Renderer *renderer, Tile board[][8], Game_State *state)
+void render(SDL_Renderer *renderer, Tile board[][8], Game_State *state, int tile_side_length, int side_buffer_length, Asset_Color color)
 {
     SDL_RenderClear(renderer);
 
-    // Draw background.
-    SDL_RenderCopy(renderer, board_texture, NULL, NULL);
+    // Set background color.
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
+    SDL_RenderFillRect(renderer, NULL);
+
+    // Draw checkered background.
+    SDL_Rect background_rect;
+    background_rect.x = side_buffer_length - (tile_side_length * 0.08);
+    background_rect.y = side_buffer_length - (tile_side_length * 0.08);
+    background_rect.w = tile_side_length * 8 + (tile_side_length * 0.20);
+    background_rect.h = tile_side_length * 8 + (tile_side_length * 0.20);
+    SDL_RenderCopy(renderer, board_texture, NULL, &background_rect);
 
     SDL_Rect tile_rect;
-    tile_rect.x = 0 + 2;
-    tile_rect.y = 0 + 2;
-    tile_rect.w = 22;
-    tile_rect.h = 22;
+    tile_rect.x = side_buffer_length;
+    tile_rect.y = side_buffer_length;
+    tile_rect.w = tile_side_length;
+    tile_rect.h = tile_side_length;
 
     // Color selection.
     if (state->selection->selected)
     {
         SDL_Rect selection_rect;
-        selection_rect.x = (state->selection->x * 22) + 2;
-        selection_rect.y = (state->selection->y * 22) + 2;
-        selection_rect.w = 22;
-        selection_rect.h = 22;
+        selection_rect.x = (state->selection->x * tile_side_length) + side_buffer_length;
+        selection_rect.y = (state->selection->y * tile_side_length) + side_buffer_length;
+        selection_rect.w = tile_side_length;
+        selection_rect.h = tile_side_length;
 
         SDL_SetRenderDrawColor(renderer, 128, 0, 128, 255);
         SDL_RenderFillRect(renderer, &selection_rect);
 
         // Color available moves. 
         SDL_Rect move_rect;
-        move_rect.x = (state->selection->x * 22) + 2;
-        move_rect.y = (state->selection->y * 22) + 2;
-        move_rect.w = 22;
-        move_rect.h = 22;
+        move_rect.x = (state->selection->x * tile_side_length) + side_buffer_length;
+        move_rect.y = (state->selection->y * tile_side_length) + side_buffer_length;
+        move_rect.w = tile_side_length;
+        move_rect.h = tile_side_length;
         
         //
         // Top left corner is (0, 0)
@@ -483,8 +528,8 @@ void render(SDL_Renderer *renderer, Tile board[][8], Game_State *state)
 
         for (int i = 0; i < possible_moves.count; i++)
         {
-            move_rect.x = ((possible_moves.squares[i].x) * 22) + 2;
-            move_rect.y = ((possible_moves.squares[i].y) * 22) + 2;
+            move_rect.x = ((possible_moves.squares[i].x) * tile_side_length) + side_buffer_length;
+            move_rect.y = ((possible_moves.squares[i].y) * tile_side_length) + side_buffer_length;
 
             SDL_RenderFillRect(renderer, &move_rect);
         }
@@ -492,10 +537,10 @@ void render(SDL_Renderer *renderer, Tile board[][8], Game_State *state)
 
     // Color hovered.
     SDL_Rect hovered_rect;
-    hovered_rect.x = (state->hovered->x * 22) + 2;
-    hovered_rect.y = (state->hovered->y * 22) + 2;
-    hovered_rect.w = 22;
-    hovered_rect.h = 22;
+    hovered_rect.x = (state->hovered->x * tile_side_length) + side_buffer_length;
+    hovered_rect.y = (state->hovered->y * tile_side_length) + side_buffer_length;
+    hovered_rect.w = tile_side_length;
+    hovered_rect.h = tile_side_length;
 
     SDL_SetRenderDrawColor(renderer, 255, 0, 255, 255);
     SDL_RenderFillRect(renderer, &hovered_rect);
@@ -510,46 +555,16 @@ void render(SDL_Renderer *renderer, Tile board[][8], Game_State *state)
                 SDL_RenderCopy(renderer, board[i][j].texture, NULL, &tile_rect);
             }
 
-            tile_rect.x += 22;
+            tile_rect.x += tile_side_length;
         }
-        tile_rect.x = 2;
-        tile_rect.y += 22;
+        tile_rect.x = side_buffer_length;
+        tile_rect.y += tile_side_length;
     }
 
     SDL_RenderPresent(renderer);
 }
 
-void render_console(SDL_Renderer *renderer, Mouse_State *mouse_state, Game_State *state)
-{
-    SDL_RenderClear(renderer);
-    SDL_RenderCopy(renderer, dog_texture, NULL, NULL);
-
-    if ((mouse_state->pressed == SDL_BUTTON_LEFT) && state->selection->selected)
-    {
-        SDL_Rect mouse_rect;
-        mouse_rect.x = mouse_state->x;
-        mouse_rect.y = mouse_state->y;
-        mouse_rect.w = 22;
-        mouse_rect.h = 22;
-
-        SDL_RenderCopy(renderer, state->selection->tile->texture, NULL, &mouse_rect);
-    }
-
-    if (mouse_state->pressed == SDL_BUTTON_RIGHT)
-    {
-        SDL_Rect mouse_rect;
-        mouse_rect.x = mouse_state->x;
-        mouse_rect.y = mouse_state->y;
-        mouse_rect.w = 22;
-        mouse_rect.h = 22;
-
-        SDL_RenderCopy(renderer, dog_texture, NULL, &mouse_rect);
-    }
-
-    SDL_RenderPresent(renderer);
-}
-
-void load_images(SDL_Renderer *renderer) 
+void load_images(SDL_Renderer *renderer, Asset_Color color) 
 {
     SDL_Surface *surface;
     for (int i = 0; i < 8; i++)
@@ -558,25 +573,45 @@ void load_images(SDL_Renderer *renderer)
         {
             if (starting_board[i][j].type != EMPTY)
             {
-                surface = IMG_Load(starting_board[i][j].texture_path);
+                if (color == DEFAULT)
+                {
+                    surface = IMG_Load(starting_board[i][j].texture_path_default);
+                }
+                else if (color == GREEN)
+                {
+                    surface = IMG_Load(starting_board[i][j].texture_path_green);
+                }
+                else
+                {
+                    surface = IMG_Load(starting_board[i][j].texture_path_pink);
+                }
                 starting_board[i][j].texture = SDL_CreateTextureFromSurface(renderer, surface);
             }
         }
     }
+    SDL_FreeSurface(surface);
 
-    SDL_Surface *board_surface = SDL_LoadBMP(BOARD_PATH);
+    SDL_Surface *board_surface;
+    if (color == DEFAULT)
+    {
+        board_surface = IMG_Load(BOARD_PATH_DEFAULT);
+    }
+    else if (color == GREEN)
+    {
+        board_surface = IMG_Load(BOARD_PATH_GREEN);
+    }
+    else
+    {
+        board_surface = IMG_Load(BOARD_PATH_PINK);
+    }
     board_texture = SDL_CreateTextureFromSurface(renderer, board_surface);
     SDL_FreeSurface(board_surface);
-
-    SDL_Surface *dog_surface = SDL_LoadBMP(DOG_PATH);
-    dog_texture = SDL_CreateTextureFromSurface(renderer, dog_surface);
-    SDL_FreeSurface(dog_surface);
 }
 
-int update(Tile board[][8], Game_State *state, Mouse_State *mouse_state)
+int update(Tile board[][8], Game_State *state, Mouse_State *mouse_state, int tile_side_length, int side_buffer_length)
 {
-    state->hovered->x = (mouse_state->x -2) / 22;
-    state->hovered->y = (mouse_state->y -2) / 22;
+    state->hovered->x = (mouse_state->x -side_buffer_length) / tile_side_length;
+    state->hovered->y = (mouse_state->y -side_buffer_length) / tile_side_length;
     state->hovered->tile = &board[state->hovered->y][state->hovered->x];
 
     if (state->hovered->x > 7) state->hovered->x = 7;
@@ -616,6 +651,9 @@ int update(Tile board[][8], Game_State *state, Mouse_State *mouse_state)
                     board[state->hovered->y][state->hovered->x].type = state->selection->tile->type;
                     board[state->hovered->y][state->hovered->x].color= state->selection->tile->color;
                     board[state->hovered->y][state->hovered->x].texture = state->selection->tile->texture;
+                    board[state->hovered->y][state->hovered->x].texture_path_default = state->selection->tile->texture_path_default;
+                    board[state->hovered->y][state->hovered->x].texture_path_green = state->selection->tile->texture_path_green;
+                    board[state->hovered->y][state->hovered->x].texture_path_pink = state->selection->tile->texture_path_pink;
 
                     // Reset the square the piece moved from.
                     board[state->selection->y][state->selection->x].type = EMPTY;
@@ -645,6 +683,7 @@ int update(Tile board[][8], Game_State *state, Mouse_State *mouse_state)
     {
         // AI's turn.
         Possible_Moves possible_moves;
+        possible_moves.count = 0;
         Selection_Info selection = {0};
 
         // Get a random piece's possible moves.
@@ -685,6 +724,9 @@ int update(Tile board[][8], Game_State *state, Mouse_State *mouse_state)
         board[possible_moves.squares[random_move].y][possible_moves.squares[random_move].x].type = selection.tile->type;
         board[possible_moves.squares[random_move].y][possible_moves.squares[random_move].x].color = selection.tile->color;
         board[possible_moves.squares[random_move].y][possible_moves.squares[random_move].x].texture = selection.tile->texture;
+        board[possible_moves.squares[random_move].y][possible_moves.squares[random_move].x].texture_path_default = selection.tile->texture_path_default;
+        board[possible_moves.squares[random_move].y][possible_moves.squares[random_move].x].texture_path_green = selection.tile->texture_path_green;
+        board[possible_moves.squares[random_move].y][possible_moves.squares[random_move].x].texture_path_pink = selection.tile->texture_path_pink;
 
         // Reset the square the piece moved from.
         board[selection.y][selection.x].type = EMPTY;
@@ -716,7 +758,7 @@ int update(Tile board[][8], Game_State *state, Mouse_State *mouse_state)
     return 0;
 }
 
-void get_input(int *quit, Mouse_State *mouse_state, int *console)
+void get_input(int *quit, Mouse_State *mouse_state, Asset_Color *color, SDL_Renderer *ren)
 {
     // Get mouse info.
     mouse_state->pressed = 0;
@@ -737,11 +779,15 @@ void get_input(int *quit, Mouse_State *mouse_state, int *console)
                         break;
 
                     case SDLK_c:
-                        if (*console == 0) {
-                            *console = 1;
-                        } else {
-                            *console = 0;
+                        if (*color == DEFAULT) {
+                            *color = GREEN;
+                        } else if (*color == GREEN) {
+                            *color = PINK;
+                        } else if (*color == PINK) {
+                            *color = DEFAULT;
                         }
+
+                        load_images(ren, *color);
                         break;
 
                     default:
@@ -802,18 +848,21 @@ int main(int argc, char *argv[])
 		return -666;
 	}
 
+    Asset_Color color = DEFAULT;
+
     printf("Loading ...\n");
-    load_images(ren);
+    load_images(ren, color);
     printf("Done!\n");
 
     // Setup main loop
     srand(time(NULL));
     int quit = 0;
-    int console = 0;
     Mouse_State mouse_state = {0};
-    // Tile board[8][8];
-    // memcpy(board, starting_board, sizeof(starting_board[0]) * 8 * 8);
-    //
+
+    /*
+    Tile board[8][8];
+    memcpy(board, starting_board, sizeof(starting_board[0]) * 8 * 8);
+    */
 
     // TODO(bkaylor): Can I get away with not malloc'ing this?
     for (int i = 0; i < 8; i++)
@@ -835,6 +884,8 @@ int main(int argc, char *argv[])
     state.black_king_state = OK;
     state.white_king_state = OK;
 
+    int window_w, window_h;
+
     // Main loop
     const float FPS_INTERVAL = 1.0f;
     Uint64 fps_start, fps_current, fps_frames = 0;
@@ -844,27 +895,18 @@ int main(int argc, char *argv[])
     while (!quit)
     {
         SDL_PumpEvents();
-        get_input(&quit, &mouse_state, &console);
+        get_input(&quit, &mouse_state, &color, ren);
 
         if (!quit)
         {
-            // TODO(bkaylor): Make the window resizable.
-            //
-            // int window_w, window_h;
-            // SDL_GetWindowSize(win, &window_w, &window_h);
-            //
+            SDL_GetWindowSize(win, &window_w, &window_h);
 
-            if (console) 
-            {
-                render_console(ren, &mouse_state, &state);
-            } 
-            else 
-            {
-                quit = update(starting_board, &state, &mouse_state);
-                render(ren, starting_board, &state);
-            }
+            int tile_side_length = window_w < window_h ? window_w / 10 : window_h / 10;
+            int side_buffer_length = window_w < window_h ? window_w / 20 : window_h / 20;
 
-            // This fps stuff is not used.
+            quit = update(starting_board, &state, &mouse_state, tile_side_length, side_buffer_length);
+            render(ren, starting_board, &state, tile_side_length, side_buffer_length, color);
+
             fps_frames++;
 
             if (fps_start < SDL_GetTicks() - FPS_INTERVAL * 1000)
