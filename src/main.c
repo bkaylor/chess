@@ -95,6 +95,12 @@ typedef struct Possible_Moves_Struct {
     int count;
 } Possible_Moves;
 
+typedef struct Entity_Struct {
+    Piece_Type type;
+    Piece_Color color;
+    Possible_Moves *possible_moves;
+} Entity;
+
 typedef struct Tile_Struct {
     Piece_Type type;
     Piece_Color color;
@@ -125,14 +131,6 @@ typedef struct Game_State_Struct {
     King_State black_king_state;
     King_State white_king_state;
 } Game_State;
-
-
-
-typedef enum Move_Killability_Enum {
-    CAN,
-    CANNOT,
-    MUST,
-} Move_Killability;
 
 typedef enum Direction_Enum {
     N,
@@ -228,6 +226,8 @@ void add_possible_moves_long(Possible_Moves *possible_moves, Selection_Info *sel
 
 void get_possible_moves(Possible_Moves *possible_moves, Selection_Info *selection, Tile board[][8])
 {
+    possible_moves->count = 0;
+
     switch (selection->tile->type)
     {
         case EMPTY:
@@ -487,11 +487,47 @@ void render(SDL_Renderer *renderer, Tile board[][8], Game_State *state, int tile
     background_rect.h = tile_side_length * 8 + (tile_side_length * 0.20);
     SDL_RenderCopy(renderer, board_texture, NULL, &background_rect);
 
-    SDL_Rect tile_rect;
-    tile_rect.x = side_buffer_length;
-    tile_rect.y = side_buffer_length;
-    tile_rect.w = tile_side_length;
-    tile_rect.h = tile_side_length;
+    // Color kings in check.
+    SDL_SetRenderDrawColor(renderer, 128, 0, 0, 255);
+    if (state->black_king_state == CHECK)
+    {
+        for (int i = 0; i < 8; i++)
+        {
+            for (int j = 0; j < 8; j++)
+            {
+                if (board[i][j].type == BLACK_KING)
+                {
+                    SDL_Rect black_king_rect;
+                    black_king_rect.x = (j * tile_side_length) + side_buffer_length;
+                    black_king_rect.y = (i * tile_side_length) + side_buffer_length;
+                    black_king_rect.w = tile_side_length;
+                    black_king_rect.h = tile_side_length;
+
+                    SDL_RenderFillRect(renderer, &black_king_rect);
+                }
+            }
+        }
+    }
+
+    if (state->white_king_state == CHECK)
+    {
+        for (int i = 0; i < 8; i++)
+        {
+            for (int j = 0; j < 8; j++)
+            {
+                if (board[i][j].type == WHITE_KING)
+                {
+                    SDL_Rect white_king_rect;
+                    white_king_rect.x = (j * tile_side_length) + side_buffer_length;
+                    white_king_rect.y = (i * tile_side_length) + side_buffer_length;
+                    white_king_rect.w = tile_side_length;
+                    white_king_rect.h = tile_side_length;
+
+                    SDL_RenderFillRect(renderer, &white_king_rect);
+                }
+            }
+        }
+    }
 
     // Color selection.
     if (state->selection->selected)
@@ -511,7 +547,7 @@ void render(SDL_Renderer *renderer, Tile board[][8], Game_State *state, int tile
         move_rect.y = (state->selection->y * tile_side_length) + side_buffer_length;
         move_rect.w = tile_side_length;
         move_rect.h = tile_side_length;
-        
+
         //
         // Top left corner is (0, 0)
         // Bottom left corner is (0, 7)
@@ -544,6 +580,12 @@ void render(SDL_Renderer *renderer, Tile board[][8], Game_State *state, int tile
 
     SDL_SetRenderDrawColor(renderer, 255, 0, 255, 255);
     SDL_RenderFillRect(renderer, &hovered_rect);
+
+    SDL_Rect tile_rect;
+    tile_rect.x = side_buffer_length;
+    tile_rect.y = side_buffer_length;
+    tile_rect.w = tile_side_length;
+    tile_rect.h = tile_side_length;
 
     // Draw board.
     for (int i = 0; i < 8; i++)
@@ -625,8 +667,8 @@ int update(Tile board[][8], Game_State *state, Mouse_State *mouse_state, int til
             if (board[j][i].type != EMPTY)
             {
                 Selection_Info temp_selection = {0};
-                temp_selection.x = j;
-                temp_selection.y = i;
+                temp_selection.x = i;
+                temp_selection.y = j;
                 temp_selection.selected = 0;
                 temp_selection.tile = &board[j][i];
 
@@ -670,7 +712,8 @@ int update(Tile board[][8], Game_State *state, Mouse_State *mouse_state, int til
         }
         else
         {
-            if ((mouse_state->pressed == SDL_BUTTON_LEFT) && (state->hovered->tile->type != EMPTY))
+            if ((mouse_state->pressed == SDL_BUTTON_LEFT) && (state->hovered->tile->type != EMPTY) && 
+                ((state->white_king_state != CHECK) || (state->hovered->tile->type == WHITE_KING)))
             {
                 state->selection->x = state->hovered->x;
                 state->selection->y = state->hovered->y;
@@ -736,6 +779,88 @@ int update(Tile board[][8], Game_State *state, Mouse_State *mouse_state, int til
     }
 
     // TODO(bkaylor): Check the state of each king.
+    // Figure out the kings' state.
+    state->black_king_state = OK;
+    state->white_king_state = OK;
+
+    // White king state.
+    Tile black_pieces[16]; 
+    Square black_pieces_locations[16];
+    int black_pieces_count = 0;
+
+    for (int i = 0; i < 8; i++)
+    {
+        for (int j = 0; j < 8; j++)
+        {
+            if (board[i][j].color == BLACK)
+            {
+                black_pieces[black_pieces_count].type = board[i][j].type;
+                black_pieces[black_pieces_count].color = board[i][j].color;
+                black_pieces[black_pieces_count].texture = board[i][j].texture;
+                black_pieces[black_pieces_count].possible_moves = board[i][j].possible_moves;
+
+                black_pieces_locations[black_pieces_count].x = i;
+                black_pieces_locations[black_pieces_count].y = j;
+
+                black_pieces_count++;
+
+            }
+        }
+    }
+
+    for (int i = 0; i < black_pieces_count; i++)
+    {
+        for (int n = 0; n < black_pieces[i].possible_moves->count; n++)
+        {
+            int x = black_pieces[i].possible_moves->squares[n].x;
+            int y = black_pieces[i].possible_moves->squares[n].y;
+
+            if (board[y][x].type == WHITE_KING)
+            {
+                state->white_king_state = CHECK;
+            }
+        }
+    }
+
+    // Black king state.
+    Tile white_pieces[16]; 
+    Square white_pieces_locations[16];
+    int white_pieces_count = 0;
+
+    for (int i = 0; i < 8; i++)
+    {
+        for (int j = 0; j < 8; j++)
+        {
+            if (board[i][j].color == WHITE)
+            {
+                white_pieces[white_pieces_count].type = board[i][j].type;
+                white_pieces[white_pieces_count].color = board[i][j].color;
+                white_pieces[white_pieces_count].texture = board[i][j].texture;
+                white_pieces[white_pieces_count].possible_moves = board[i][j].possible_moves;
+
+                white_pieces_locations[white_pieces_count].x = i;
+                white_pieces_locations[white_pieces_count].y = j;
+
+                white_pieces_count++;
+            }
+        }
+    }
+
+    for (int i = 0; i < white_pieces_count; i++)
+    {
+        for (int n = 0; n < white_pieces[i].possible_moves->count; n++)
+        {
+            int x = white_pieces[i].possible_moves->squares[n].x;
+            int y = white_pieces[i].possible_moves->squares[n].y;
+
+            if (board[y][x].type == BLACK_KING)
+            {
+                state->black_king_state = CHECK;
+            }
+        }
+    }
+
+
 
     // Check if someone has won.
     int kings = 0;
@@ -850,9 +975,7 @@ int main(int argc, char *argv[])
 
     Asset_Color color = DEFAULT;
 
-    printf("Loading ...\n");
     load_images(ren, color);
-    printf("Done!\n");
 
     // Setup main loop
     srand(time(NULL));
