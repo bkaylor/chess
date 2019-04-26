@@ -471,8 +471,28 @@ Tile starting_board[8][8] = {
 SDL_Texture *board_texture;
 SDL_Texture *dog_texture;
 
+// TODO(bkaylor): These circles look bad ...
+void draw_circle(SDL_Renderer *ren, SDL_Point center, int radius, SDL_Color color)
+{
+    SDL_SetRenderDrawColor(ren, color.r, color.g, color.b, color.a);
+    for (int w = 0; w < radius * 2; w++)
+    {
+        for (int h = 0; h < radius * 2; h++)
+        {
+            int dx = radius - w; // horizontal offset
+            int dy = radius - h; // vertical offset
+            if ((dx*dx + dy*dy) <= (radius * radius))
+            {
+                SDL_RenderDrawPoint(ren, center.x + dx, center.y + dy);
+            }
+        }
+    }
+}
+
 void render(SDL_Renderer *renderer, Tile board[][8], Game_State *state, int tile_side_length, int side_buffer_length, Asset_Color color)
 {
+    float percent_of_tile_for_piece_to_take_up = 0.85f;
+    float percent_of_tile_for_move_circle_to_take_up = 0.18f;
     SDL_RenderClear(renderer);
 
     // Set background color.
@@ -541,36 +561,9 @@ void render(SDL_Renderer *renderer, Tile board[][8], Game_State *state, int tile
         SDL_SetRenderDrawColor(renderer, 128, 0, 128, 255);
         SDL_RenderFillRect(renderer, &selection_rect);
 
-        // Color available moves. 
-        SDL_Rect move_rect;
-        move_rect.x = (state->selection->x * tile_side_length) + side_buffer_length;
-        move_rect.y = (state->selection->y * tile_side_length) + side_buffer_length;
-        move_rect.w = tile_side_length;
-        move_rect.h = tile_side_length;
-
-        //
-        // Top left corner is (0, 0)
-        // Bottom left corner is (0, 7)
-        // Top right corner is (7, 0)
-        // Button right corner is (7, 7)
-        //
-
-        Possible_Moves possible_moves; 
-        possible_moves.count = 0;
-
-        get_possible_moves(&possible_moves, state->selection, board);
-
-        SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255);
-
-        for (int i = 0; i < possible_moves.count; i++)
-        {
-            move_rect.x = ((possible_moves.squares[i].x) * tile_side_length) + side_buffer_length;
-            move_rect.y = ((possible_moves.squares[i].y) * tile_side_length) + side_buffer_length;
-
-            SDL_RenderFillRect(renderer, &move_rect);
-        }
     }
 
+#if 0
     // Color hovered.
     SDL_Rect hovered_rect;
     hovered_rect.x = (state->hovered->x * tile_side_length) + side_buffer_length;
@@ -580,12 +573,13 @@ void render(SDL_Renderer *renderer, Tile board[][8], Game_State *state, int tile
 
     SDL_SetRenderDrawColor(renderer, 255, 0, 255, 255);
     SDL_RenderFillRect(renderer, &hovered_rect);
+#endif
 
     SDL_Rect tile_rect;
-    tile_rect.x = side_buffer_length;
-    tile_rect.y = side_buffer_length;
-    tile_rect.w = tile_side_length;
-    tile_rect.h = tile_side_length;
+    tile_rect.x = side_buffer_length + (tile_side_length * ((1.0f - percent_of_tile_for_piece_to_take_up) / 2));
+    tile_rect.y = side_buffer_length + (tile_side_length * ((1.0f - percent_of_tile_for_piece_to_take_up) / 2));
+    tile_rect.w = tile_side_length * percent_of_tile_for_piece_to_take_up;
+    tile_rect.h = tile_side_length * percent_of_tile_for_piece_to_take_up;
 
     // Draw board.
     for (int i = 0; i < 8; i++)
@@ -599,8 +593,35 @@ void render(SDL_Renderer *renderer, Tile board[][8], Game_State *state, int tile
 
             tile_rect.x += tile_side_length;
         }
-        tile_rect.x = side_buffer_length;
+        tile_rect.x = side_buffer_length + (tile_side_length * ((1.0f - percent_of_tile_for_piece_to_take_up) / 2));
         tile_rect.y += tile_side_length;
+    }
+
+    // Color available moves. 
+    if (state->selection->selected)
+    {
+        SDL_Point move_point = {0};
+
+        Possible_Moves *possible_moves = state->selection->tile->possible_moves; 
+
+        SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255);
+        SDL_Color color_move = {0, 153, 76, 255};
+        SDL_Color color_kill = {153, 0, 0, 255};
+
+        for (int i = 0; i < possible_moves->count; i++)
+        {
+            move_point.x = ((possible_moves->squares[i].x) * tile_side_length) + side_buffer_length + (tile_side_length / 2);
+            move_point.y = ((possible_moves->squares[i].y) * tile_side_length) + side_buffer_length + (tile_side_length / 2);
+
+            if (board[possible_moves->squares[i].y][possible_moves->squares[i].x].type != EMPTY)
+            {
+                draw_circle(renderer, move_point, (int) (percent_of_tile_for_move_circle_to_take_up * tile_side_length), color_kill);
+            }
+            else
+            {
+                draw_circle(renderer, move_point, (int) (percent_of_tile_for_move_circle_to_take_up * tile_side_length), color_move);
+            }
+        }
     }
 
     SDL_RenderPresent(renderer);
@@ -677,18 +698,27 @@ int update(Tile board[][8], Game_State *state, Mouse_State *mouse_state, int til
         }
     }
 
+    // Add data about threatened squares.
+    for (int i = 0; i < 8; i++)
+    {
+        for (int j = 0; j < 8; j++)
+        {
+            if (board[j][i].type == BLACK_KING || board[j][i].type == WHITE_KING)
+            {
+            }
+        }
+    }
+
+
     if (state->player_turn)
     {
         if (state->selection->selected) 
         {
-            Possible_Moves possible_moves; 
-            possible_moves.count = 0;
-
-            get_possible_moves(&possible_moves, state->selection, board);
+            Possible_Moves *possible_moves = state->selection->tile->possible_moves; 
 
             if (mouse_state->pressed == SDL_BUTTON_LEFT)
             {
-                if (is_possible_move(&possible_moves, state->hovered->x, state->hovered->y))
+                if (is_possible_move(possible_moves, state->hovered->x, state->hovered->y))
                 {
                     board[state->hovered->y][state->hovered->x].type = state->selection->tile->type;
                     board[state->hovered->y][state->hovered->x].color= state->selection->tile->color;
@@ -712,6 +742,9 @@ int update(Tile board[][8], Game_State *state, Mouse_State *mouse_state, int til
         }
         else
         {
+            // TODO(bkaylor): This is not the right thing to do! King in check doesn't mean king must move.
+            // Other pieces can make legal moves when the king is in check.
+            // What should happen, is there should be a function to check the state of the king given a move is made.
             if ((mouse_state->pressed == SDL_BUTTON_LEFT) && (state->hovered->tile->type != EMPTY) && 
                 ((state->white_king_state != CHECK) || (state->hovered->tile->type == WHITE_KING)))
             {
@@ -725,9 +758,6 @@ int update(Tile board[][8], Game_State *state, Mouse_State *mouse_state, int til
     else
     {
         // AI's turn.
-        Possible_Moves possible_moves;
-        possible_moves.count = 0;
-        Selection_Info selection = {0};
 
         // Get a random piece's possible moves.
         Tile black_pieces[16]; 
@@ -743,6 +773,7 @@ int update(Tile board[][8], Game_State *state, Mouse_State *mouse_state, int til
                     black_pieces[black_pieces_count].type = board[i][j].type;
                     black_pieces[black_pieces_count].color = board[i][j].color;
                     black_pieces[black_pieces_count].texture = board[i][j].texture;
+                    black_pieces[black_pieces_count].possible_moves = board[i][j].possible_moves;
 
                     black_pieces_locations[black_pieces_count].x = j;
                     black_pieces_locations[black_pieces_count].y = i;
@@ -752,24 +783,26 @@ int update(Tile board[][8], Game_State *state, Mouse_State *mouse_state, int til
             }
         }
 
-        while (possible_moves.count == 0)
+        Selection_Info selection = {0};
+
+        do
         {
             int random_piece_index = rand() % black_pieces_count;
             selection.x = black_pieces_locations[random_piece_index].x;
             selection.y = black_pieces_locations[random_piece_index].y;
             selection.tile = &black_pieces[random_piece_index];
+        } while (selection.tile->possible_moves->count == 0);
 
-            get_possible_moves(&possible_moves, &selection, board);
-        }
+        Possible_Moves *possible_moves = selection.tile->possible_moves;
 
         // Get a random possible move.
-        int random_move = rand() % possible_moves.count;
-        board[possible_moves.squares[random_move].y][possible_moves.squares[random_move].x].type = selection.tile->type;
-        board[possible_moves.squares[random_move].y][possible_moves.squares[random_move].x].color = selection.tile->color;
-        board[possible_moves.squares[random_move].y][possible_moves.squares[random_move].x].texture = selection.tile->texture;
-        board[possible_moves.squares[random_move].y][possible_moves.squares[random_move].x].texture_path_default = selection.tile->texture_path_default;
-        board[possible_moves.squares[random_move].y][possible_moves.squares[random_move].x].texture_path_green = selection.tile->texture_path_green;
-        board[possible_moves.squares[random_move].y][possible_moves.squares[random_move].x].texture_path_pink = selection.tile->texture_path_pink;
+        int random_move = rand() % possible_moves->count;
+        board[possible_moves->squares[random_move].y][possible_moves->squares[random_move].x].type = selection.tile->type;
+        board[possible_moves->squares[random_move].y][possible_moves->squares[random_move].x].color = selection.tile->color;
+        board[possible_moves->squares[random_move].y][possible_moves->squares[random_move].x].texture = selection.tile->texture;
+        board[possible_moves->squares[random_move].y][possible_moves->squares[random_move].x].texture_path_default = selection.tile->texture_path_default;
+        board[possible_moves->squares[random_move].y][possible_moves->squares[random_move].x].texture_path_green = selection.tile->texture_path_green;
+        board[possible_moves->squares[random_move].y][possible_moves->squares[random_move].x].texture_path_pink = selection.tile->texture_path_pink;
 
         // Reset the square the piece moved from.
         board[selection.y][selection.x].type = EMPTY;
@@ -778,7 +811,6 @@ int update(Tile board[][8], Game_State *state, Mouse_State *mouse_state, int til
         state->player_turn = 1;
     }
 
-    // TODO(bkaylor): Check the state of each king.
     // Figure out the kings' state.
     state->black_king_state = OK;
     state->white_king_state = OK;
@@ -859,8 +891,6 @@ int update(Tile board[][8], Game_State *state, Mouse_State *mouse_state, int til
             }
         }
     }
-
-
 
     // Check if someone has won.
     int kings = 0;

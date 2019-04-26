@@ -1,0 +1,9 @@
+Ideas from other chess client:
+	[ ] Blue circle for possible moves
+	[ ] Red circle for possible moves resulting in kill
+	[ ] For castling, king has extra possible move two spaces to the right.
+	[ ] Feature: Draw an arrow from a piece to any square
+	[ ] Click and drag instead of click to select?
+	[ ] Preview mode , where you can move pieces but reset to the real game state
+	[ ] Pieces should be smaller in the square (not right up against the edge)
+	[ ] Letters on bottom, numbers on side
